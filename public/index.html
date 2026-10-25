@@ -1,8 +1,92 @@
 <!doctype html>
 <html lang="lt">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>testas1</title></head>
-<body style="font-family: system-ui, sans-serif; max-width: 640px; margin: 64px auto; padding: 0 16px">
-  <h1>testas1</h1>
-  <p>Projektas paruoštas. Šį puslapį pakeiskite savo programa.</p>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151b25">
+  <title>Konkurso – pirkimų konkursų valdymas</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="auth-view" class="auth-layout" hidden>
+    <section class="auth-hero">
+      <div class="brand brand-light"><span class="brand-mark">K</span><span>konkurso<span class="brand-dot">.</span></span></div>
+      <div class="auth-hero-copy">
+        <span class="eyebrow light">PIRKIMŲ KOMANDOMS</span>
+        <h1>Daugiau aiškumo.<br><em>Daugiau laimėtų konkursų.</em></h1>
+        <p>Visi konkursai, terminai ir komandos darbai vienoje vietoje. Nuo pirmos galimybės iki pateikto pasiūlymo.</p>
+      </div>
+      <div class="auth-hero-foot">Sukurta komandoms, kurios nori judėti į priekį.</div>
+    </section>
+    <main class="auth-panel">
+      <div class="auth-mobile-brand brand"><span class="brand-mark">K</span><span>konkurso<span class="brand-dot">.</span></span></div>
+      <div class="auth-card">
+        <span class="eyebrow">SVEIKI ATVYKĘ</span>
+        <h2 id="auth-title">Prisijunkite prie savo komandos</h2>
+        <p id="auth-subtitle" class="muted">Jūsų konkursai laukia. Tęskite ten, kur sustojote.</p>
+        <form id="auth-form">
+          <div id="register-fields" hidden>
+            <label>Vardas ir pavardė<input name="name" autocomplete="name" placeholder="Jūsų vardas"></label>
+            <label>Komandos pavadinimas<input name="workspace" placeholder="Pavyzdžiui, Baltijos sprendimai"></label>
+            <div class="field-note">Jungiatės prie komandos? Žemiau įveskite pakvietimo kodą ir komandos pavadinimo nereikės.</div>
+            <label>Pakvietimo kodas <span class="optional">(neprivaloma)</span><input name="inviteCode" placeholder="Kodas iš komandos administratoriaus"></label>
+          </div>
+          <label>El. paštas<input name="email" type="email" autocomplete="email" required placeholder="vardas@imone.lt"></label>
+          <label>Slaptažodis<input name="password" type="password" autocomplete="current-password" required placeholder="Bent 10 simbolių"></label>
+          <button class="button primary full" type="submit" id="auth-submit">Prisijungti <span>→</span></button>
+        </form>
+        <p class="switch-auth" id="auth-switch-line">Dar neturite paskyros? <button type="button" id="auth-switch">Sukurti paskyrą</button></p>
+      </div>
+      <p class="auth-bottom">Saugiai valdoma jūsų komandos darbo erdvė.</p>
+    </main>
+  </div>
+
+  <div id="app-view" class="app-layout" hidden>
+    <aside class="sidebar">
+      <div class="brand brand-light"><span class="brand-mark">K</span><span>konkurso<span class="brand-dot">.</span></span></div>
+      <div class="workspace-label">DARBO ERDVĖ</div>
+      <div id="workspace-name" class="workspace-name"></div>
+      <nav class="nav" aria-label="Pagrindinis meniu">
+        <button data-view="overview" class="active"><span class="nav-icon">▦</span> Apžvalga</button>
+        <button data-view="tenders"><span class="nav-icon">▤</span> Konkursai</button>
+        <button data-view="tasks"><span class="nav-icon">☑</span> Užduotys</button>
+        <button data-view="team"><span class="nav-icon">♧</span> Komanda</button>
+        <button data-view="billing"><span class="nav-icon">◇</span> Planas ir mokėjimai</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-help"><span>✳</span><div><strong>Viskas vienoje vietoje</strong><p>Sekite terminus ir pasiruoškite laiku.</p></div></div>
+        <div class="profile"><div id="avatar" class="avatar"></div><div><strong id="profile-name"></strong><small id="profile-role"></small></div><button id="logout" aria-label="Atsijungti" title="Atsijungti">↗</button></div>
+      </div>
+    </aside>
+    <div class="main-area">
+      <header class="topbar"><div class="breadcrumb">DARBO ERDVĖ <span>/</span> <strong id="breadcrumb-title">Apžvalga</strong></div><div class="topbar-right"><span id="plan-pill" class="plan-pill">NEMOKAMAS</span><span id="today"></span></div></header>
+      <main id="content" class="content"></main>
+    </div>
+  </div>
+
+  <dialog id="tender-dialog" class="modal">
+    <form id="tender-form">
+      <div class="modal-head"><div><span class="eyebrow">KONKURSO KORTELĖ</span><h2 id="tender-form-title">Naujas konkursas</h2></div><button type="button" class="icon-button" data-close="tender-dialog" aria-label="Uždaryti">×</button></div>
+      <input name="id" type="hidden">
+      <label>Konkurso pavadinimas <span class="required">*</span><input name="title" required maxlength="200" placeholder="Pavyzdžiui, IT infrastruktūros atnaujinimas"></label>
+      <div class="form-grid"><label>Perkančioji organizacija<input name="buyer" maxlength="200" placeholder="Organizacijos pavadinimas"></label><label>Pirkimo numeris<input name="reference" maxlength="100" placeholder="CVP IS numeris"></label></div>
+      <div class="form-grid"><label>Pasiūlymo terminas<input name="deadline" type="date"></label><label>Numatoma vertė, €<input name="valueEur" type="number" min="0" step="0.01" placeholder="0,00"></label></div>
+      <label>Būsena<select name="status"><option value="new">Naujas</option><option value="evaluating">Vertiname</option><option value="preparing">Ruošiame</option><option value="submitted">Pateiktas</option><option value="won">Laimėtas</option><option value="lost">Nelaimėtas</option></select></label>
+      <label>Pastabos<textarea name="description" rows="3" maxlength="3000" placeholder="Svarbios sąlygos, nuorodos, kiti pastebėjimai"></textarea></label>
+      <div class="modal-actions"><button type="button" class="button quiet" data-close="tender-dialog">Atšaukti</button><button class="button primary" type="submit">Išsaugoti konkursą</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="task-dialog" class="modal">
+    <form id="task-form">
+      <div class="modal-head"><div><span class="eyebrow">KOMANDOS DARBAS</span><h2>Nauja užduotis</h2></div><button type="button" class="icon-button" data-close="task-dialog" aria-label="Uždaryti">×</button></div>
+      <label>Užduotis <span class="required">*</span><input name="title" required maxlength="200" placeholder="Pavyzdžiui, parengti techninį pasiūlymą"></label>
+      <label>Konkursas<select name="tenderId" required></select></label>
+      <label>Terminas<input name="dueDate" type="date"></label>
+      <div class="modal-actions"><button type="button" class="button quiet" data-close="task-dialog">Atšaukti</button><button class="button primary" type="submit">Sukurti užduotį</button></div>
+    </form>
+  </dialog>
 </body>
 </html>
